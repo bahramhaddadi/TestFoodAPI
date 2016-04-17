@@ -1,5 +1,5 @@
 //
-//  ViewController.h
+//  SearchViewController.h
 //  TestFoodAPI
 //
 //  Created by Bahram Haddadi on 2016-03-08.
@@ -8,8 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
-
+@interface SearchViewController : UIViewController
 
 @end
-
