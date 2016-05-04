@@ -11,8 +11,9 @@
 @interface Recipe : NSObject
 
 @property (strong,nonatomic) NSString *title;
-@property (strong,nonatomic) NSString *href;
+@property (strong,nonatomic) NSString *hrefShortDesc;
+@property (strong,nonatomic) NSString *hrefLongtDesc;
 @property (strong,nonatomic) NSString *ingredients;
-@property (strong,nonatomic) NSString *thumbnail;
+@property (strong,nonatomic) NSString *imageUrl;
 
 @end

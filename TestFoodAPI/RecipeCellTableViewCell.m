@@ -8,6 +8,7 @@
 
 #import "RecipeCellTableViewCell.h"
 #import "ImageCacheManager.h"
+#import "Recipe.h"
 
 @interface RecipeCellTableViewCell()
 @property (weak, nonatomic) IBOutlet UIImageView *imgRecipe;
@@ -56,7 +57,18 @@
             self.imgRecipe.image = image;
         });
     }];
-
 }
+
+-(void)setRecipe:(Recipe*)recipe{
+    self.imgRecipe.image = [UIImage imageNamed:@"placeholder"];
+    self.lblRecipeName.text = recipe.title;
+    
+    [[ImageCacheManager sharedInstance] loadImage:recipe.imageUrl complition:^(UIImage *image, NSError *error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.imgRecipe.image = image;
+        });
+    }];    
+}
+
 
 @end

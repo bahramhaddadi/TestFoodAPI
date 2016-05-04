@@ -12,6 +12,9 @@
 #import "API.h"
 #import "ImageCacheManager.h"
 #import "RecipeCellTableViewCell.h"
+#import "Recipe.h"
+
+const int kPageSize = 30;
 
 @interface SearchViewController () <UITableViewDataSource,UITableViewDelegate,UITextViewDelegate>
 @property (strong,nonatomic) NSMutableArray *recipes;
@@ -47,24 +50,37 @@
     API *api = [API sharedInstance];
     NSString *ingredients = [self.txtIngredients.text stringByReplacingOccurrencesOfString:@" " withString:@","];
     __weak typeof(self)weakself = self;
-    [api getRecipesByIngredients:ingredients criteria:self.txtSearchCriteria.text page:0 completion:^(NSArray *result, NSError *error) {
+//    [api getRecipesByIngredients:ingredients criteria:self.txtSearchCriteria.text page:0 completion:^(NSArray *result, NSError *error) {
+//        [weakself showSpinner:NO];
+//        if(!error){
+//            weakself.recipes = [result mutableCopy];
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                [weakself.tableView reloadData];
+//            });
+//        }else{
+//            NSLog(@"Error on loading");
+//        }
+//    }];
+
+    [api getRecipesByIngredients:ingredients page:0 completion:^(NSArray<Recipe *> *recipies, NSError *error) {
         [weakself showSpinner:NO];
         if(!error){
-            weakself.recipes = [result mutableCopy];
+            weakself.recipes = [recipies mutableCopy];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakself.tableView reloadData];
             });
         }else{
             NSLog(@"Error on loading");
         }
+
     }];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
     if([segue.identifier isEqualToString:@"showDetail"]){
         WebRecipeDetailViewController *vc = segue.destinationViewController;
-        NSDictionary *recipe = self.recipes[self.selectedRecipeindex];
-        vc.webUrl = recipe[@"href"];
+        Recipe *recipe = self.recipes[self.selectedRecipeindex];
+        vc.webUrl = recipe.hrefShortDesc;
     }
 }
 
@@ -78,7 +94,7 @@
 
 #pragma mark - UITableViewDelegate
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-    if(self.recipes.count == ((int)self.recipes.count/10)*10 && self.recipes.count>0){
+    if(self.recipes.count == ((int)self.recipes.count/kPageSize)*kPageSize && self.recipes.count>0){
         return self.recipes.count + 1;
     }else{
         return self.recipes.count;
@@ -90,25 +106,10 @@
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"loadMoreID"];
         return cell;
     }else{
-        NSDictionary *recipe = self.recipes[indexPath.row];
+        Recipe *recipe = self.recipes[indexPath.row];
         RecipeCellTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[RecipeCellTableViewCell getReusableIdentifier]];
-        [cell setRecipeData:recipe];
+        [cell setRecipe:recipe];
         return cell;
-        
-//        cell = [tableView dequeueReusableCellWithIdentifier:@"cellID"];
-//        NSDictionary *recipe = self.recipes[indexPath.row];
-//        NSString *title = recipe[@"title"];
-//        NSString *imageUrl = recipe[@"thumbnail"];
-//        cell.textLabel.text = [title stringByReplacingOccurrencesOfString:@"\n" withString:@"" ];
-//        cell.detailTextLabel.text = recipe[@"ingredients"];        
-//        cell.imageView.image = [UIImage imageNamed:@"placeholder"];
-//
-//        [self.cacheManager loadImage:imageUrl complition:^(UIImage *image, NSError *error) {
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                cell.imageView.image = image;
-//            });
-//
-//        }];
     }
 }
 
@@ -123,16 +124,15 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(nonnull NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     if(indexPath.row==self.recipes.count){
-        NSLog(@"Load More .........");
-        NSInteger pageNo = (self.recipes.count/10) + 1;
+        NSInteger pageNo = (self.recipes.count/kPageSize) + 1;
         NSString *ingredients = [self.txtIngredients.text stringByReplacingOccurrencesOfString:@" " withString:@","];
         
         API *api = [API sharedInstance];
         __weak typeof(self)weakself = self;
-        [api getRecipesByIngredients:ingredients criteria:self.txtSearchCriteria.text page:pageNo completion:^(NSArray *result, NSError *error) {
+        [api getRecipesByIngredients:ingredients page:pageNo completion:^(NSArray<Recipe *> *recipies, NSError *error) {
             [weakself showSpinner:NO];
             if(!error){
-                [weakself.recipes addObjectsFromArray:result];
+                [weakself.recipes addObjectsFromArray:recipies];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [weakself.tableView reloadData];
                 });
@@ -140,7 +140,6 @@
                 NSLog(@"Error on loading");
             }
         }];
-
     }else{
         self.selectedRecipeindex = indexPath.row;
         [self performSegueWithIdentifier:@"showDetail" sender:self];

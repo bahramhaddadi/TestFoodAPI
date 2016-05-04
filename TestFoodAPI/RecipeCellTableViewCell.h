@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class Recipe;
+
 @interface RecipeCellTableViewCell : UITableViewCell
 
 +(NSString*)getNibName;
@@ -15,5 +17,6 @@
 +(CGFloat)cellHeighht;
 
 -(void)setRecipeData:(NSDictionary*)recipe;
+-(void)setRecipe:(Recipe*)recipe;
 
 @end
