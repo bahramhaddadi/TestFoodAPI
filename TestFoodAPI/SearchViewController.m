@@ -24,6 +24,7 @@ const int kPageSize = 30;
 @property NSInteger selectedRecipeindex;
 @property (weak, nonatomic) IBOutlet UIView *vwSpinnerBG;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
+@property (weak, nonatomic) IBOutlet UILabel *lblIngredientWaterMark;
 @property (strong,nonatomic) ImageCacheManager *cacheManager;
 @end
 
@@ -90,7 +91,14 @@ const int kPageSize = 30;
         NSLog(@"remove word and search");
     }
 }
-
+-(void)textViewDidBeginEditing:(UITextView *)textView{
+    self.lblIngredientWaterMark.hidden = YES;
+}
+-(void)textViewDidEndEditing:(UITextView *)textView{
+    if(textView.text.length==0){
+        self.lblIngredientWaterMark.hidden = NO;
+    }
+}
 
 #pragma mark - UITableViewDelegate
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
